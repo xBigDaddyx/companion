@@ -39,22 +39,22 @@ class CompanyResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('companion::companion.resource.label');
+        return __('companion::companion.company.resource.label');
     }
 
     public static function getPluralLabel(): string
     {
-        return __('companion::companion.resource.label');
+        return __('companion::companion.company.resource.label');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('companion::companion.resource.group');
+        return __('companion::companion.company.resource.group');
     }
 
     public function getTitle(): string
     {
-        return __('companion::companion.resource.title');
+        return __('companion::companion.company.resource.title');
     }
 
     public static function form(Form $form): Form
