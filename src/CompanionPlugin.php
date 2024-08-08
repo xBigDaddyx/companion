@@ -7,6 +7,7 @@ use Filament\Panel;
 use Xbigdaddyx\Companion\Filament\Pages\Tenancy\EditCompanyProfile;
 use Xbigdaddyx\Companion\Filament\Pages\Tenancy\RegisterCompany;
 use Xbigdaddyx\Companion\Filament\Resources\CompanyResource;
+use Xbigdaddyx\Companion\Filament\Resources\UserResource;
 
 class CompanionPlugin implements Plugin
 {
@@ -32,6 +33,7 @@ class CompanionPlugin implements Plugin
         ])
             ->resources([
                 CompanyResource::class,
+                UserResource::class,
             ]);
     }
 
