@@ -1,0 +1,16 @@
+{
+    "name": "xbigdaddyx/companion",
+    "description": "Company tenancy for teresa",
+    "autoload": {
+        "psr-4": {
+            "Xbigdaddyx\\Companion\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "xBigDaddyx",
+            "email": "yussupcazzanova97@gmail.com"
+        }
+    ],
+    "require": {}
+}
