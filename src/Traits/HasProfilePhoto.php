@@ -13,9 +13,9 @@ trait HasProfilePhoto
      */
     public function updateProfilePhoto(UploadedFile $photo, $storagePath = 'profile-photos'): void
     {
-        tap($this->profile_photo_path, function ($previous) use ($photo, $storagePath) {
+        tap($this->avatar_url, function ($previous) use ($photo, $storagePath) {
             $this->forceFill([
-                'profile_photo_path' => $photo->storePublicly(
+                'avatar_url' => $photo->storePublicly(
                     $storagePath,
                     ['disk' => $this->profilePhotoDisk()]
                 ),
@@ -32,33 +32,33 @@ trait HasProfilePhoto
      */
     public function deleteProfilePhoto(): void
     {
-        if (!Features::managesProfilePhotos() || $this->profile_photo_path === null) {
+        if (!Features::managesProfilePhotos() || $this->avatar_url === null) {
             return;
         }
 
-        Storage::disk($this->profilePhotoDisk())->delete($this->profile_photo_path);
+        Storage::disk($this->profilePhotoDisk())->delete($this->avatar_url);
 
         $this->forceFill([
-            'profile_photo_path' => null,
+            'avatar_url' => null,
         ])->save();
     }
 
     /**
      * Get the URL to the user's profile photo.
      */
-    public function profilePhotoUrl(): Attribute
-    {
-        return Attribute::get(function () {
-            return $this->profile_photo_path
-                ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
-                : $this->defaultProfilePhotoUrl();
-        });
-    }
+    // public function avatarUrl(): Attribute
+    // {
+    //     return Attribute::get(function () {
+    //         return $this->avatar_url
+    //             ? Storage::disk($this->profilePhotoDisk())->url($this->avatar_url)
+    //             : $this->defaultProfilePhotoUrl();
+    //     });
+    // }
 
     /**
      * Get the default profile photo URL if no profile photo has been uploaded.
      */
-    protected function defaultProfilePhotoUrl(): string
+    protected function defaultAvatarUrl(): string
     {
         $name = trim(collect(explode(' ', $this->name))->map(static function ($segment) {
             return mb_substr($segment, 0, 1);

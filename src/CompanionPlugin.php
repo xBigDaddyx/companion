@@ -8,10 +8,11 @@ use Xbigdaddyx\Companion\Filament\Pages\Tenancy\EditCompanyProfile;
 use Xbigdaddyx\Companion\Filament\Pages\Tenancy\RegisterCompany;
 use Xbigdaddyx\Companion\Filament\Resources\CompanyResource;
 use Xbigdaddyx\Companion\Filament\Resources\UserResource;
+use Xbigdaddyx\Companion\Traits\HasBaseModels;
 
 class CompanionPlugin implements Plugin
 {
-
+    use HasBaseModels;
     protected bool $hasBuyerResource = true;
     protected bool $hasCartonBoxResource = true;
     protected bool $hasPackingListResource = true;

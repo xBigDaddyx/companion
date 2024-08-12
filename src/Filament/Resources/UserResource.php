@@ -18,11 +18,22 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\UserResource\Pages;
+use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\ImageColumn;
 use STS\FilamentImpersonate\Tables\Actions\Impersonate;
 use Xbigdaddyx\Companion\Filament\Resources\UserResource\Pages\CreateUser;
 use Xbigdaddyx\Companion\Filament\Resources\UserResource\Pages\EditUser;
 use Xbigdaddyx\Companion\Filament\Resources\UserResource\Pages\ListUsers;
+use Xbigdaddyx\Companion\Filament\Resources\UserResource\RelationManagers\CompaniesRelationManager;
+use Xbigdaddyx\Companion\Filament\Resources\UserResource\RelationManagers\CompanyRelationManager;
+use Xbigdaddyx\Companion\Models\Company;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class UserResource extends Resource
 {
@@ -60,32 +71,98 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         $rows = [
-            TextInput::make('name')
-                ->required()
-                ->label(trans('companion::companion.resource.user.name')),
-            TextInput::make('email')
-                ->email()
-                ->required()
-                ->label(trans('companion::companion.resource.user.email')),
-            TextInput::make('password')
-                ->label(trans('companion::companion.resource.user.password'))
-                ->password()
-                ->maxLength(255)
-                ->dehydrateStateUsing(static function ($state) use ($form) {
-                    return !empty($state)
-                        ? Hash::make($state)
-                        : User::find($form->getColumns())?->password;
-                }),
+
+
+
+            Group::make([
+                FileUpload::make('avatar_url')
+                    ->label('Avatar')
+                    ->directory('avatars')
+                    ->getUploadedFileNameForStorageUsing(
+                        fn (TemporaryUploadedFile $file): string => (string) str($file->getClientOriginalName())
+                            ->prepend(Auth::user()->name . '-'),
+                    )
+                    ->downloadable()
+                    ->image()
+                    ->avatar()
+                    ->imageEditor()
+                    ->circleCropper(),
+
+            ]),
+            Group::make([
+                Section::make('General')
+                    ->columns(2)
+                    ->schema([
+
+                        TextInput::make('name')
+                            ->required()
+                            ->label(trans('companion::companion.resource.user.name')),
+                        TextInput::make('email')
+                            ->email()
+                            ->required()
+                            ->label(trans('companion::companion.resource.user.email')),
+                    ]),
+                Section::make('Credential')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('password')
+                            ->label(trans('companion::companion.resource.user.password'))
+                            ->password()
+                            ->maxLength(255)
+                            ->dehydrateStateUsing(static function ($state) use ($form) {
+                                return !empty($state)
+                                    ? Hash::make($state)
+                                    : User::find($form->getColumns())?->password;
+                            }),
+                        Select::make('roles')
+                            ->multiple()
+                            ->preload()
+                            ->relationship('roles', 'name')
+                            ->label(trans('companion::companion.resource.user.roles'))
+                    ]),
+                Section::make('Companies')
+                    ->schema([
+                        Repeater::make('userCompanies')
+                            ->relationship()
+                            ->schema([
+                                Select::make('company_id')
+                                    ->relationship('company', 'name')
+                                    ->required(),
+                                TextInput::make('role'),
+                                // ...
+                            ])
+                            ->collapsible()
+                            ->collapsed()
+                            ->deleteAction(
+                                fn (Action $action) => $action->requiresConfirmation(),
+                            )
+                            ->itemLabel(function (array $state) {
+                                return Company::find($state['company_id'])->name ?? null;
+                            })
+                            ->grid(2)
+                            ->columnSpanFull(),
+                    ])
+
+            ]),
+
+
+
+
+            // Forms\Components\Select::make('companies')
+            //     ->multiple()
+            //     ->preload()
+            //     ->relationship('companies', 'name')
+            //     ->label('Companies')
         ];
 
 
-        if (config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)) {
-            $rows[] = Forms\Components\Select::make('roles')
-                ->multiple()
-                ->preload()
-                ->relationship('roles', 'name')
-                ->label(trans('companion::companion.resource.user.roles'));
-        }
+        // if (config('filament-users.shield') && class_exists(\BezhanSalleh\FilamentShield\FilamentShield::class)) {
+        //     $rows[] = Forms\Components\Select::make('roles')
+        //         ->multiple()
+        //         ->preload()
+        //         ->relationship('roles', 'name')
+        //         ->label(trans('companion::companion.resource.user.roles'));
+        // }
 
         $form->schema($rows);
 
@@ -99,7 +176,8 @@ class UserResource extends Resource
         }
         $table
             ->columns([
-                ImageColumn::make('avatar')
+                ImageColumn::make('avatar_url')
+                    ->label('Avatar')
                     ->circular(),
                 TextColumn::make('id')
                     ->toggleable(isToggledHiddenByDefault: true)
@@ -158,7 +236,12 @@ class UserResource extends Resource
             ]);
         return $table;
     }
-
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
     public static function getPages(): array
     {
         return [

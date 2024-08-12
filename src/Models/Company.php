@@ -2,6 +2,7 @@
 
 namespace Xbigdaddyx\Companion\Models;
 
+use App\Models\Role as ModelsRole;
 use Domain\Accuracies\Models\Buyer;
 use Domain\Accuracies\Models\CartonBox;
 use Domain\Accuracies\Models\PackingList;
@@ -35,6 +36,8 @@ use Spatie\Permission\Models\Role;
 use Xbigdaddyx\Auditor\Models\Area;
 use Xbigdaddyx\Auditor\Models\Issue;
 use Xbigdaddyx\Auditor\Models\Resolution;
+use Xbigdaddyx\Companion\CompanionPlugin;
+use Xbigdaddyx\Companion\Traits\HasBaseModels;
 use Xbigdaddyx\Companion\Traits\HasProfileLogo;
 use Xbigdaddyx\Roomy\Models\Event;
 use Xbigdaddyx\Roomy\Models\Room;
@@ -96,15 +99,22 @@ class Company extends Model implements HasAvatar, HasCurrentTenantLabel
         return $this->belongsTo(config('companion.user_model'), 'created_by', 'id');
     }
 
-    public function users(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(config('companion.user_model'), 'current_company_id', 'id');
+        //return $this->hasMany(config('companion.user_model'), 'current_company_id', 'id');
+        return $this->belongsToMany(config('companion.user_model'), 'companion_company_user')
+            ->withPivot('role')
+            ->withTimestamps()
+            ->using(CompanyEmployee::class);
     }
 
-    public function members(): BelongsToMany
-    {
-        return $this->belongsToMany(config('companion.user_model'), 'companion_company_user');
-    }
+    // public function members(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(config('companion.user_model'), 'companion_company_user')
+    //         ->withPivot('role')
+    //         ->withTimestamps()
+    //         > using(CompanyEmployee::class);
+    // }
 
     // public function packingLists(): HasMany
     // {
